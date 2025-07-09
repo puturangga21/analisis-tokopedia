@@ -1,16 +1,19 @@
-# app.py
 from flask import Flask, jsonify, request
 import pandas as pd
 from flask_cors import CORS
 from pymongo import MongoClient
+from dotenv import load_dotenv
+import os
+
+load_dotenv()  # Muat variabel dari .env
 
 app = Flask(__name__)
 CORS(app)
 
 # --- Koneksi MongoDB ---
-MONGO_URI = 'mongodb+srv://puturangga21:abcd@cluster.67v0swb.mongodb.net/'
-DATABASE_NAME = 'big_data'
-COLLECTION_NAME = 'dataset_tokopedia'
+MONGO_URI = os.getenv('MONGO_URI')
+DATABASE_NAME = os.getenv('DATABASE_NAME')
+COLLECTION_NAME = os.getenv('COLLECTION_NAME')
 
 try:
     client = MongoClient(MONGO_URI)
