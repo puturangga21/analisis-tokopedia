@@ -68,8 +68,12 @@ def produk_multi_lokasi():
     judul_berbeda_lokasi = title_location_counts[title_location_counts['delivery'] > 1]
     return jsonify(judul_berbeda_lokasi['title'].tolist())
 
-@app.route('/produk-perbandingan/<judul_produk>', methods=['GET'])
-def produk_perbandingan_lokasi(judul_produk):
+@app.route('/produk-perbandingan', methods=['GET'])
+def produk_perbandingan_lokasi():
+    judul_produk = request.args.get('judul')
+    if not judul_produk:
+        return jsonify({'error': 'Judul produk tidak diberikan'}), 400
+
     df_filtered = df[df['title'] == judul_produk].copy()
 
     if df_filtered.empty:
