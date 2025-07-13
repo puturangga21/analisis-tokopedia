@@ -29,26 +29,35 @@ except Exception as e:
 if not df.empty:
     df['diskon_rupiah'] = df['original price'] - df['price']
 
-
 # --- ENDPOINT 1: Produk dengan Diskon Tertinggi ---
 @app.route('/list-subcategory', methods=['GET'])
 def list_subcategory():
-    unique_subcats = df['subcategory'].dropna().unique().tolist()
-    unique_subcats.sort()
-    return jsonify(unique_subcats)
+    # Filter hanya produk yang memiliki diskon valid
+    df_diskon = df[df['original price'] > df['price']].copy()
+
+    # Hitung jumlah produk per subkategori
+    subcat_counts = df_diskon['subcategory'].value_counts()
+
+    # Ambil subkategori yang memiliki lebih dari 1 produk
+    subcats_valid = subcat_counts[subcat_counts > 1].index.tolist()
+    subcats_valid.sort()
+
+    return jsonify(subcats_valid)
+
+
 
 @app.route('/diskon-tertinggi', methods=['GET'])
 def diskon_tertinggi():
     subcategory = request.args.get('subcategory')
+    df_diskon = df[df['diskon_rupiah'] > 0].copy()
 
-    df_diskon = df[df['original price'] > df['price']].copy()
     if subcategory:
         df_diskon = df_diskon[df_diskon['subcategory'] == subcategory]
 
-    df_diskon['diskon_rupiah'] = df_diskon['original price'] - df_diskon['price']
     top = df_diskon.sort_values(by='diskon_rupiah', ascending=False).head(10).reset_index(drop=True)
-    hasil = top[['title', 'diskon_rupiah', 'discount', 'delivery', 'subcategory']].to_dict(orient='records')
+    hasil = top[['title', 'diskon_rupiah', 'discount', 'delivery']].to_dict(orient='records')
     return jsonify(hasil)
+
 
 
 # --- ENDPOINT 2: 10 Lokasi dengan Jumlah Barang Terbanyak ---
