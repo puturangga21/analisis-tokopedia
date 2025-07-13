@@ -61,12 +61,24 @@ def diskon_tertinggi():
 # --- ENDPOINT 2: 10 Lokasi dengan Jumlah Barang Terbanyak ---
 @app.route('/lokasi-terbanyak', methods=['GET'])
 def lokasi_terbanyak():
-    lokasi_counts = df.groupby('delivery')['stock'].sum().sort_values(ascending=False).head(10)
-    hasil = lokasi_counts.reset_index().rename(columns={
-        'delivery': 'delivery',     
-        'stock': 'jumlah'         
-    })
-    return jsonify(hasil.to_dict(orient='records'))
+    hasil = []
+
+    # Hitung total stock per lokasi
+    lokasi_stock = df.groupby('delivery')['stock'].sum().sort_values(ascending=False).head(10)
+
+    for lokasi, jumlah in lokasi_stock.items():
+        df_lokasi = df[df['delivery'] == lokasi]
+        subcats = df_lokasi['subcategory'].value_counts().to_dict()
+
+        hasil.append({
+            'delivery': lokasi,
+            'jumlah': int(jumlah),
+            'jumlah_subkategori': len(subcats),
+            'subkategori': subcats
+        })
+
+    return jsonify(hasil)
+
 
 # --- ENDPOINT 3: Perbandingan Harga Asli vs Harga Diskon ---
 @app.route('/perbandingan-harga', methods=['GET'])
