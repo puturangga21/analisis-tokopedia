@@ -63,6 +63,18 @@ function App() {
       }
     }
 
+    if (value === '3') {
+      setLoading(true);
+      try {
+        const res = await axios.get('http://localhost:5000/list-subcategory');
+        setSubCategoryList(res.data);
+      } catch (err) {
+        console.error('Gagal memuat sub kategori:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
     if (value === '4') {
       setLoading(true);
       try {
@@ -93,18 +105,6 @@ function App() {
       }
     }
 
-    // if (selectedAnalysis === '1') {
-    //   setLoading(true);
-    //   try {
-    //     const res = await axios.get('http://127.0.0.1:5000/diskon-tertinggi');
-    //     setData(res.data);
-    //   } catch (error) {
-    //     console.error('Gagal memuat data:', error);
-    //   } finally {
-    //     setLoading(false);
-    //   }
-    // }
-
     if (selectedAnalysis === '2') {
       setLoading(true);
       try {
@@ -118,9 +118,12 @@ function App() {
     }
 
     if (selectedAnalysis === '3') {
+      if (!selectedSubCategory) return alert('Pilih subkategori terlebih dahulu!');
       setLoading(true);
       try {
-        const res = await axios.get('http://127.0.0.1:5000/perbandingan-harga');
+        const res = await axios.get(
+          `http://localhost:5000/perbandingan-harga?subcategory=${selectedSubCategory}`
+        );
         setData(res.data);
       } catch (error) {
         console.error('Gagal memuat data:', error);
@@ -179,7 +182,7 @@ function App() {
             </Select>
           </div>
 
-          {selectedAnalysis === '1' && (
+          {(selectedAnalysis === '1' || selectedAnalysis === '3') && (
             <div className="flex flex-col text-sm gap-1">
               <p>Pilih Sub Kategori</p>
               <Popover open={open} onOpenChange={setOpen}>

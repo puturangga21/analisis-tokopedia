@@ -44,8 +44,6 @@ def list_subcategory():
 
     return jsonify(subcats_valid)
 
-
-
 @app.route('/diskon-tertinggi', methods=['GET'])
 def diskon_tertinggi():
     subcategory = request.args.get('subcategory')
@@ -73,12 +71,17 @@ def lokasi_terbanyak():
 # --- ENDPOINT 3: Perbandingan Harga Asli vs Harga Diskon ---
 @app.route('/perbandingan-harga', methods=['GET'])
 def perbandingan_harga():
+    subcategory = request.args.get('subcategory')
     df['diskon_rupiah'] = df['original price'] - df['price']
     filtered = df[df['diskon_rupiah'] > 0]
+
+    if subcategory:
+        filtered = filtered[filtered['subcategory'] == subcategory]
+
     top = filtered.sort_values(by='original price', ascending=False).head(10)
-    
     hasil = top[['title', 'price', 'original price', 'discount', 'delivery']].to_dict(orient='records')
     return jsonify(hasil)
+
 
 # --- ENDPOINT 4: Produk Sama di Lokasi Berbeda ---
 @app.route('/produk-multi-lokasi', methods=['GET'])
