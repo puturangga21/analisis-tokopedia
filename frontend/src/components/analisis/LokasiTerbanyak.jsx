@@ -22,16 +22,7 @@ const CustomTooltip = ({ active, payload }) => {
         <p className="text-gray-700">
           📦 Total Barang: {data.jumlah.toLocaleString('id-ID')}
         </p>
-        <p className="text-gray-700 mt-1">📚 {data.jumlah_subkategori} Subkategori:</p>
-        <div className="mt-1 max-h-32 overflow-y-auto pr-1">
-          <ul className="list-disc list-inside text-gray-600 space-y-0.5">
-            {Object.entries(data.subkategori).map(([name, count], idx) => (
-              <li key={idx}>
-                {name} <span className="text-gray-400">({count})</span>
-              </li>
-            ))}
-          </ul>
-        </div>
+        <p className="text-gray-700 mt-1">📚 {data.jumlah_subkategori} Subkategori</p>
       </div>
     );
   }
@@ -81,10 +72,8 @@ const LokasiTerbanyak = ({ data }) => {
             </p>
             <div className="max-h-[450px] overflow-y-auto pr-1">
               <ul className="list-disc list-inside text-sm text-gray-700 space-y-1">
-                {Object.entries(selectedCity.subkategori).map(([name, count], idx) => (
-                  <li key={idx}>
-                    {name} <span className="text-gray-400">({count})</span>
-                  </li>
+                {Object.entries(selectedCity.subkategori).map(([name], idx) => (
+                  <li key={idx}>{name}</li>
                 ))}
               </ul>
             </div>
