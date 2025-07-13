@@ -5,10 +5,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
+import { CheckIcon, ChevronsUpDownIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Separator } from '@/components/ui/separator';
 import { useState } from 'react';
 import axios from 'axios';
+import { cn } from '@/lib/utils';
 import DiskonTerbesar from './components/analisis/DiskonTerbesar';
 import LokasiTerbanyak from './components/analisis/LokasiTerbanyak';
 import PerbandinganHarga from './components/analisis/PerbandinganHarga';
@@ -23,21 +34,39 @@ const jenisAnalisis = {
 
 function App() {
   const [selectedAnalysis, setSelectedAnalysis] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [subCategoryList, setSubCategoryList] = useState([]);
+  const [selectedSubCategory, setSelectedSubCategory] = useState('');
+
   const [produkList, setProdukList] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState('');
+
+  const [loading, setLoading] = useState(false);
+  const [produkOpen, setProdukOpen] = useState(false);
+  const [open, setOpen] = useState(false);
+
   const [data, setData] = useState([]);
 
   const handleSelectAnalysis = async (value) => {
     setSelectedAnalysis(value);
     setData([]);
     setSelectedProduct('');
+
+    if (value === '1') {
+      setLoading(true);
+      try {
+        const res = await axios.get('http://localhost:5000/list-subcategory');
+        setSubCategoryList(res.data);
+      } catch (err) {
+        console.error('Gagal memuat sub kategori:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
     if (value === '4') {
       setLoading(true);
       try {
-        const res = await axios.get(
-          'https://analisis-produk-tokopedia-backend.vercel.app/produk-multi-lokasi'
-        );
+        const res = await axios.get('http://127.0.0.1:5000/produk-multi-lokasi');
         setProdukList(res.data);
       } catch (err) {
         console.error('Gagal memuat daftar produk:', err);
@@ -49,10 +78,12 @@ function App() {
 
   const handleAnalisis = async () => {
     if (selectedAnalysis === '1') {
+      if (!selectedSubCategory) return alert('Pilih subkategori terlebih dahulu!');
+
       setLoading(true);
       try {
         const res = await axios.get(
-          'https://analisis-produk-tokopedia-backend.vercel.app/diskon-tertinggi'
+          `http://localhost:5000/diskon-tertinggi?subcategory=${selectedSubCategory}`
         );
         setData(res.data);
       } catch (error) {
@@ -62,12 +93,22 @@ function App() {
       }
     }
 
+    // if (selectedAnalysis === '1') {
+    //   setLoading(true);
+    //   try {
+    //     const res = await axios.get('http://127.0.0.1:5000/diskon-tertinggi');
+    //     setData(res.data);
+    //   } catch (error) {
+    //     console.error('Gagal memuat data:', error);
+    //   } finally {
+    //     setLoading(false);
+    //   }
+    // }
+
     if (selectedAnalysis === '2') {
       setLoading(true);
       try {
-        const res = await axios.get(
-          'https://analisis-produk-tokopedia-backend.vercel.app/lokasi-terbanyak'
-        );
+        const res = await axios.get('http://127.0.0.1:5000/lokasi-terbanyak');
         setData(res.data);
       } catch (error) {
         console.error('Gagal memuat data:', error);
@@ -79,9 +120,7 @@ function App() {
     if (selectedAnalysis === '3') {
       setLoading(true);
       try {
-        const res = await axios.get(
-          'https://analisis-produk-tokopedia-backend.vercel.app/perbandingan-harga'
-        );
+        const res = await axios.get('http://127.0.0.1:5000/perbandingan-harga');
         setData(res.data);
       } catch (error) {
         console.error('Gagal memuat data:', error);
@@ -94,7 +133,7 @@ function App() {
       setLoading(true);
       try {
         const res = await axios.get(
-          `https://analisis-produk-tokopedia-backend.vercel.app/produk-perbandingan?judul=${selectedProduct}`
+          `http://127.0.0.1:5000/produk-perbandingan?judul=${selectedProduct}`
         );
         setData(res.data);
       } catch (error) {
@@ -140,25 +179,106 @@ function App() {
             </Select>
           </div>
 
-          <div className="flex flex-col text-sm gap-1 ">
-            {selectedAnalysis === '4' && (
-              <div className="flex flex-col text-sm gap-1">
-                <p>Pilih Produk</p>
-                <Select onValueChange={setSelectedProduct}>
-                  <SelectTrigger className="w-fit">
-                    <SelectValue placeholder="Pilih Produk" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {produkList.map((item, idx) => (
-                      <SelectItem key={idx} value={item}>
-                        {item.length > 60 ? item.slice(0, 60) + '...' : item}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-          </div>
+          {selectedAnalysis === '1' && (
+            <div className="flex flex-col text-sm gap-1">
+              <p>Pilih Sub Kategori</p>
+              <Popover open={open} onOpenChange={setOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={open}
+                    className="w-[300px] justify-between">
+                    {selectedSubCategory
+                      ? subCategoryList.find((sc) => sc === selectedSubCategory)
+                      : 'Pilih Subkategori...'}
+                    <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[300px] p-0">
+                  <Command>
+                    <CommandInput placeholder="Cari subkategori..." />
+                    <CommandList>
+                      <CommandEmpty>Subkategori tidak ditemukan.</CommandEmpty>
+                      <CommandGroup>
+                        {subCategoryList.map((subcat) => (
+                          <CommandItem
+                            key={subcat}
+                            value={subcat}
+                            onSelect={(currentValue) => {
+                              setSelectedSubCategory(
+                                currentValue === selectedSubCategory ? '' : currentValue
+                              );
+                              setOpen(false);
+                            }}>
+                            <CheckIcon
+                              className={cn(
+                                'mr-2 h-4 w-4',
+                                selectedSubCategory === subcat
+                                  ? 'opacity-100'
+                                  : 'opacity-0'
+                              )}
+                            />
+                            {subcat}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+            </div>
+          )}
+
+          {selectedAnalysis === '4' && (
+            <div className="flex flex-col text-sm gap-1">
+              <p>Pilih Produk</p>
+              <Popover open={produkOpen} onOpenChange={setProdukOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={produkOpen}
+                    className="w-[400px] justify-between">
+                    <p className="truncate">
+                      {selectedProduct
+                        ? produkList.find((p) => p === selectedProduct)
+                        : 'Pilih Produk...'}
+                    </p>
+
+                    <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[400px] p-0">
+                  <Command>
+                    <CommandInput placeholder="Cari produk..." />
+                    <CommandList>
+                      <CommandEmpty>Produk tidak ditemukan.</CommandEmpty>
+                      <CommandGroup>
+                        {produkList.map((produk) => (
+                          <CommandItem
+                            key={produk}
+                            value={produk}
+                            onSelect={(currentValue) => {
+                              setSelectedProduct(currentValue);
+                              setProdukOpen(false);
+                            }}>
+                            <CheckIcon
+                              className={cn(
+                                'mr-2 h-4 w-4',
+                                selectedProduct === produk ? 'opacity-100' : 'opacity-0'
+                              )}
+                            />
+                            {produk.length > 60 ? produk.slice(0, 60) + '...' : produk}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+            </div>
+          )}
 
           <Button className="cursor-pointer" onClick={handleAnalisis}>
             Analisis
