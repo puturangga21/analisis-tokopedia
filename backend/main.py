@@ -5,7 +5,7 @@ from pymongo import MongoClient
 from dotenv import load_dotenv
 import os
 
-load_dotenv()  # Muat variabel dari .env
+load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
@@ -31,13 +31,23 @@ if not df.empty:
 
 
 # --- ENDPOINT 1: Produk dengan Diskon Tertinggi ---
+@app.route('/list-subcategory', methods=['GET'])
+def list_subcategory():
+    unique_subcats = df['subcategory'].dropna().unique().tolist()
+    unique_subcats.sort()
+    return jsonify(unique_subcats)
+
 @app.route('/diskon-tertinggi', methods=['GET'])
 def diskon_tertinggi():
-    df_diskon = df[df['diskon_rupiah'] > 0].copy()
-    top = df_diskon.sort_values(by='diskon_rupiah', ascending=False).head(10).reset_index(drop=True)
+    subcategory = request.args.get('subcategory')
 
-    # Kirim hanya kolom yang diperlukan
-    hasil = top[['title', 'diskon_rupiah', 'discount', 'delivery']].to_dict(orient='records')
+    df_diskon = df[df['original price'] > df['price']].copy()
+    if subcategory:
+        df_diskon = df_diskon[df_diskon['subcategory'] == subcategory]
+
+    df_diskon['diskon_rupiah'] = df_diskon['original price'] - df_diskon['price']
+    top = df_diskon.sort_values(by='diskon_rupiah', ascending=False).head(10).reset_index(drop=True)
+    hasil = top[['title', 'diskon_rupiah', 'discount', 'delivery', 'subcategory']].to_dict(orient='records')
     return jsonify(hasil)
 
 
@@ -46,8 +56,8 @@ def diskon_tertinggi():
 def lokasi_terbanyak():
     lokasi_counts = df.groupby('delivery')['stock'].sum().sort_values(ascending=False).head(10)
     hasil = lokasi_counts.reset_index().rename(columns={
-        'delivery': 'delivery',      # tetap 'delivery'
-        'stock': 'jumlah'            # sesuaikan dengan frontend
+        'delivery': 'delivery',     
+        'stock': 'jumlah'         
     })
     return jsonify(hasil.to_dict(orient='records'))
 
@@ -85,4 +95,4 @@ def produk_perbandingan_lokasi():
 
 # --- Run Flask App ---
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True) 
