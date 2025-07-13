@@ -54,7 +54,9 @@ function App() {
     if (value === '1') {
       setLoading(true);
       try {
-        const res = await axios.get('http://127.0.0.1:5000/list-subcategory');
+        const res = await axios.get(
+          'https://analisis-produk-tokopedia-backend.vercel.app/list-subcategory'
+        );
         setSubCategoryList(res.data);
       } catch (err) {
         console.error('Gagal memuat sub kategori:', err);
@@ -66,7 +68,9 @@ function App() {
     if (value === '3') {
       setLoading(true);
       try {
-        const res = await axios.get('http://127.0.0.1:5000/list-subcategory');
+        const res = await axios.get(
+          'https://analisis-produk-tokopedia-backend.vercel.app/list-subcategory'
+        );
         setSubCategoryList(res.data);
       } catch (err) {
         console.error('Gagal memuat sub kategori:', err);
@@ -78,7 +82,9 @@ function App() {
     if (value === '4') {
       setLoading(true);
       try {
-        const res = await axios.get('http://127.0.0.1:5000/produk-multi-lokasi');
+        const res = await axios.get(
+          'https://analisis-produk-tokopedia-backend.vercel.app/produk-multi-lokasi'
+        );
         setProdukList(res.data);
       } catch (err) {
         console.error('Gagal memuat daftar produk:', err);
@@ -95,7 +101,7 @@ function App() {
       setLoading(true);
       try {
         const res = await axios.get(
-          `http://127.0.0.1:5000/diskon-tertinggi?subcategory=${selectedSubCategory}`
+          `https://analisis-produk-tokopedia-backend.vercel.app/diskon-tertinggi?subcategory=${selectedSubCategory}`
         );
         setData(res.data);
       } catch (error) {
@@ -108,7 +114,9 @@ function App() {
     if (selectedAnalysis === '2') {
       setLoading(true);
       try {
-        const res = await axios.get('http://127.0.0.1:5000/lokasi-terbanyak');
+        const res = await axios.get(
+          'https://analisis-produk-tokopedia-backend.vercel.app/lokasi-terbanyak'
+        );
         setData(res.data);
       } catch (error) {
         console.error('Gagal memuat data:', error);
@@ -122,7 +130,7 @@ function App() {
       setLoading(true);
       try {
         const res = await axios.get(
-          `http://127.0.0.1:5000/perbandingan-harga?subcategory=${selectedSubCategory}`
+          `https://analisis-produk-tokopedia-backend.vercel.app/perbandingan-harga?subcategory=${selectedSubCategory}`
         );
         setData(res.data);
       } catch (error) {
@@ -136,7 +144,7 @@ function App() {
       setLoading(true);
       try {
         const res = await axios.get(
-          `http://127.0.0.1:5000/produk-perbandingan?judul=${selectedProduct}`
+          `https://analisis-produk-tokopedia-backend.vercel.app/produk-perbandingan?judul=${selectedProduct}`
         );
         setData(res.data);
       } catch (error) {
